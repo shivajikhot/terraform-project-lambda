@@ -1,7 +1,4 @@
-output "patient_lambda_arn" {
-  value = aws_lambda_function.patient_service.arn
+output "hello_world_lambda_arn" {
+  value = aws_lambda_function.hello_world.arn
 }
 
-output "appointment_lambda_arn" {
-  value = aws_lambda_function.appointment_service.arn
-}
