@@ -10,8 +10,6 @@ module "lambda" {
 
 module "apigateway" {
   source                     = "../../modules/apigateway"
-  patient_lambda_arn         = module.lambda.hello_world_lambda_arn
-  region                 = "us-west-1"
 }
 module "ecr" {
   source = "../../modules/ecr"
