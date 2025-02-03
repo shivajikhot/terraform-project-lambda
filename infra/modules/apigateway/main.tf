@@ -1,57 +1,59 @@
-resource "aws_api_gateway_rest_api" "microservices_api" {
-  name        = "MicroservicesAPI"
-  description = "API Gateway for hello-world  services"
+resource "aws_apigatewayv2_api" "lambda" {
+  name          = "serverless_lambda_gw"
+  protocol_type = "HTTP"
 }
 
-# Patient Service API Resource
-resource "aws_api_gateway_resource" "hello_world_resource" {
-  rest_api_id = aws_api_gateway_rest_api.microservices_api.id
-  parent_id   = aws_api_gateway_rest_api.microservices_api.root_resource_id
-  path_part   = "hello-world"
+resource "aws_apigatewayv2_stage" "lambda" {
+  api_id = aws_apigatewayv2_api.lambda.id
+
+  name        = "serverless_lambda_stage"
+  auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gw.arn
+
+    format = jsonencode({
+      requestId               = "$context.requestId"
+      sourceIp                = "$context.identity.sourceIp"
+      requestTime             = "$context.requestTime"
+      protocol                = "$context.protocol"
+      httpMethod              = "$context.httpMethod"
+      resourcePath            = "$context.resourcePath"
+      routeKey                = "$context.routeKey"
+      status                  = "$context.status"
+      responseLength          = "$context.responseLength"
+      integrationErrorMessage = "$context.integrationErrorMessage"
+      }
+    )
+  }
 }
 
+resource "aws_apigatewayv2_integration" "hello_world" {
+  api_id = aws_apigatewayv2_api.lambda.id
 
-
-# Service Method (POST)
-resource "aws_api_gateway_method" "hello_world_method" {
-  rest_api_id   = aws_api_gateway_rest_api.microservices_api.id
-  resource_id   = aws_api_gateway_resource.hello_world_resource.id
-  http_method   = "POST"
-  authorization = "NONE"
+  integration_uri    = aws_lambda_function.hello_world.invoke_arn
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
 }
 
+resource "aws_apigatewayv2_route" "hello_world" {
+  api_id = aws_apigatewayv2_api.lambda.id
 
+  route_key = "GET /hello"
+  target    = "integrations/${aws_apigatewayv2_integration.hello_world.id}"
 }
 
-#  Lambda Integration
-resource "aws_api_gateway_integration" "hello_world_lambda_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.microservices_api.id
-  resource_id             = aws_api_gateway_resource.hello_world_resource.id
-  http_method             = aws_api_gateway_method.hello_world_method.http_method
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${var.hello_world_lambda_arn}/invocations"
+resource "aws_cloudwatch_log_group" "api_gw" {
+  name = "/aws/api_gw/${aws_apigatewayv2_api.lambda.name}"
+
+  retention_in_days = 30
 }
 
-
-
-# API Gateway Deployment
-resource "aws_api_gateway_deployment" "api_deployment" {
-  depends_on  = [
-    aws_api_gateway_integration.hello_world_lambda_integration,
-
-  ]
-  rest_api_id = aws_api_gateway_rest_api.microservices_api.id
-  stage_name  = "dev"
-}
-
-# Lambda Permissions for API Gateway Invocation
-resource "aws_lambda_permission" "allow_api_gateway_patient" {
+resource "aws_lambda_permission" "api_gw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = var.hello-world_lambda_arn
+  function_name = aws_lambda_function.hello_world.function_name
   principal     = "apigateway.amazonaws.com"
 
-  source_arn = "${aws_api_gateway_rest_api.microservices_api.execution_arn}/*/*"
+  source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
 }
-
