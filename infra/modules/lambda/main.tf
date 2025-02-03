@@ -10,8 +10,7 @@ resource "aws_lambda_function" "patient_service" {
 
   environment {
     variables = {
-      NODE_ENV = "production"
-      DB_URL   = var.patient_db_url
+      NODE_ENV = "dev"
     }
   }
 }
@@ -28,8 +27,7 @@ resource "aws_lambda_function" "appointment_service" {
 
   environment {
     variables = {
-      NODE_ENV = "production"
-      DB_URL   = var.appointment_db_url
+      NODE_ENV = "dev"
     }
   }
 }
