@@ -13,7 +13,7 @@ module "apigateway" {
   source                     = "../../modules/apigateway"
   patient_lambda_arn         = module.lambda.patient_lambda_arn
   appointment_lambda_arn     = module.lambda.appointment_lambda_arn
-  region                 = var.aws_region
+  region                 = "us-west-1"
 }
 module "ecr" {
   source = "../../modules/ecr"
