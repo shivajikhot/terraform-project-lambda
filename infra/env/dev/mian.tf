@@ -16,3 +16,6 @@ module "apigateway" {
   patient_lambda_arn         = module.lambda.patient_lambda_arn
   appointment_lambda_arn     = module.lambda.appointment_lambda_arn
 }
+module "ecr" {
+  source = "../../modules/ecr"
+}
