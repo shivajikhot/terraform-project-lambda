@@ -1,1 +1,1 @@
-variable "hello_world.invoke_arn" {}
+variable "hello_world_invoke_arn" {}
