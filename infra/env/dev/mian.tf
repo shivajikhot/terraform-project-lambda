@@ -6,8 +6,6 @@ module "lambda" {
   source                        = "../../modules/lambda"
   patient_service_image_uri     = var.patient_service_image_uri
   appointment_service_image_uri = var.appointment_service_image_uri
-  patient_db_url                = var.patient_db_url
-  appointment_db_url            = var.appointment_db_url
   lambda_execution_role_arn     = module.iam.lambda_execution_role_arn
 }
 
