@@ -3,7 +3,8 @@ FROM public.ecr.aws/lambda/nodejs:16
  
 # Set the working directory in the container
 WORKDIR /var/task
- 
+RUN npm install express aws-serverless-express
+
 # Copy the package.json and install dependencies
 COPY appointment-service.js ${LAMBDA_TASK_ROOT}
  
