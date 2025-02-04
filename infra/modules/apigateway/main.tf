@@ -39,7 +39,7 @@ resource "aws_apigatewayv2_integration" "appointment" {
 resource "aws_apigatewayv2_route" "appointment" {
   api_id = aws_apigatewayv2_api.lambda.id
 
-  route_key = "GET /hello"
+  route_key = "GET /health"
   target    = "integrations/${aws_apigatewayv2_integration.appointment.id}"
 }
 
