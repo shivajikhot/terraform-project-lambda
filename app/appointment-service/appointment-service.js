@@ -1,87 +1,103 @@
-const express = require('express');
-const awsServerlessExpress = require('aws-serverless-express');
-const app = express();
-const port = process.env.PORT || 3001;
- 
-app.use(express.json());
- 
-// In-memory data store (replace with a database in a real application)
-let appointments = [
+// In-memory data store
+const appointments = [
   { id: '1', patientId: '1', date: '2023-06-15', time: '10:00', doctor: 'Dr. Smith' },
   { id: '2', patientId: '2', date: '2023-06-16', time: '14:30', doctor: 'Dr. Johnson' }
 ];
  
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', service: 'Appointment Service' });
+// Health check route handler
+const healthCheck = async () => ({
+  statusCode: 200,
+  body: JSON.stringify({ status: 'OK', service: 'Appointment Service' }),
 });
  
-app.get('/appointments', (req, res) => {
-  res.json({
-    message: 'Appointments retrieved successfully',
-    count: appointments.length,
-    appointments: appointments
-  });
+// Get all appointments handler
+const getAppointments = async () => ({
+  statusCode: 200,
+  body: JSON.stringify({ message: 'Appointments retrieved successfully', count: appointments.length, appointments }),
 });
  
-app.get('/appointments/:id', (req, res) => {
-  const appointment = appointments.find(a => a.id === req.params.id);
+// Get appointment by ID handler
+const getAppointmentById = async (id) => {
+  const appointment = appointments.find(a => a.id === id);
   if (appointment) {
-    res.json({
-      message: 'Appointment found',
-      appointment: appointment
-    });
-  } else {
-    res.status(404).json({ error: 'Appointment not found' });
-  }
-});
- 
-app.post('/appointments', (req, res) => {
-  try {
-    const { patientId, date, time, doctor } = req.body;
-    if (!patientId || !date || !time || !doctor) {
-      return res.status(400).json({ error: 'Patient ID, date, time, and doctor are required' });
-    }
-    const newAppointment = {
-      id: (appointments.length + 1).toString(),
-      patientId,
-      date,
-      time,
-      doctor
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Appointment found', appointment }),
     };
-    appointments.push(newAppointment);
-    res.status(201).json({
-      message: 'Appointment scheduled successfully',
-      appointment: newAppointment
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+  } else {
+    return { statusCode: 404, body: JSON.stringify({ error: 'Appointment not found' }) };
   }
-});
+};
  
-app.get('/appointments/patient/:patientId', (req, res) => {
+// Create a new appointment handler
+const createAppointment = async (body) => {
+  let parsedBody;
+ 
   try {
-    const patientId = req.params.patientId;
-    const patientAppointments = appointments.filter(appt => appt.patientId === patientId);
-    if (patientAppointments.length > 0) {
-      res.json({
-        message: `Found ${patientAppointments.length} appointment(s) for patient ${patientId}`,
-        appointments: patientAppointments
-      });
-    } else {
-      res.status(404).json({ message: `No appointments found for patient ${patientId}` });
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    parsedBody = JSON.parse(body);
+  } catch (err) {
+    console.error("Error parsing JSON:", err); // Log parsing error
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body' }) };
   }
-});
  
-// Lambda handler
-const server = awsServerlessExpress.createServer(app);
+  const { patientId, date, time, doctor } = parsedBody;
+  if (!patientId || !date || !time || !doctor) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Patient ID, date, time, and doctor are required' }) };
+  }
+  const newAppointment = { id: (appointments.length + 1).toString(), patientId, date, time, doctor };
+  appointments.push(newAppointment);
+  return { statusCode: 201, body: JSON.stringify({ message: 'Appointment scheduled successfully', appointment: newAppointment }) };
+};
  
-// Use AWS Serverless Express to handle the event, without modifying path
-exports.handler = (event, context) => {
-  console.log('Event: ', event);  // Log the event for debugging
+// Get appointments by patient ID handler
+const getAppointmentsByPatientId = async (patientId) => {
+  const patientAppointments = appointments.filter(appt => appt.patientId === patientId);
+  if (patientAppointments.length > 0) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: `Found ${patientAppointments.length} appointment(s) for patient ${patientId}`, appointments: patientAppointments }),
+    };
+  } else {
+    return { statusCode: 404, body: JSON.stringify({ message: `No appointments found for patient ${patientId}` }) };
+  }
+};
  
-  // Pass the event and context to the server
-  awsServerlessExpress.proxy(server, event, context);
+// Main Lambda handler function
+exports.handler = async (event) => {
+  console.log('Event:', JSON.stringify(event, null, 2)); // Log the event for debugging
+ 
+  try {
+    const { path, httpMethod, body } = event;
+ 
+    // Health check endpoint
+    if (path === '/health' && httpMethod === 'GET') {
+      return await healthCheck();
+    } 
+    // Get all appointments endpoint
+    else if (path === '/appointments' && httpMethod === 'GET') {
+      return await getAppointments();
+    } 
+    // Get specific appointment by ID
+    else if (path && path.startsWith('/appointments/') && httpMethod === 'GET') { // Ensure path is defined
+      const id = path.split('/')[2];
+      return await getAppointmentById(id);
+    } 
+    // Create a new appointment
+    else if (path === '/appointments' && httpMethod === 'POST') {
+      return await createAppointment(body);
+    } 
+    // Get appointments by patient ID
+    else if (path && path.startsWith('/appointments/patient/') && httpMethod === 'GET') { // Ensure path is defined
+      const segments = path.split('/');
+      const patientId = segments[segments.length - 1];
+      return await getAppointmentsByPatientId(patientId);
+    } 
+    // Return 404 for undefined routes
+    else {
+      return { statusCode: 404, body: JSON.stringify({ error: 'Not Found' }) };
+    }
+  } catch (err) {
+    console.error("Unexpected error:", err); // Log unexpected errors
+    return { statusCode: 500, body: JSON.stringify({ error: 'Internal Server Error', message: err.message }) };
+  }
 };
