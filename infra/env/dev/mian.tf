@@ -10,7 +10,7 @@ module "lambda" {
 
 module "apigateway" {
   source                     = "../../modules/apigateway"
-  hello_world_invoke_arn  = module.lambda.hello_world_invoke_arn
+  appointment_invoke_arn  = module.lambda.appointment_invoke_arn
 }
 module "ecr" {
   source = "../../modules/ecr"
