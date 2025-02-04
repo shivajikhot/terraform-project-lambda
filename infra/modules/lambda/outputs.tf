@@ -1,4 +1,4 @@
-output "hello_world_lambda_arn" {
+output "appointment_lambda_arn" {
   value = aws_lambda_function.appointment_service.arn
 }
 
@@ -7,6 +7,6 @@ output "function_name" {
 
   value = aws_lambda_function.appointment_service.function_name
 }
-output "hello_world_invoke_arn" {
+output "appointment_invoke_arn" {
   value = aws_lambda_function.appointment_service.invoke_arn
 }
