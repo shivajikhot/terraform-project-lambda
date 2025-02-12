@@ -5,7 +5,9 @@ on:
   # push:
   #   branches:
   #     - main  # Change to your deployment branch
-
+env:
+  AWS_REGION: "us-west-1"
+  
 jobs:
   build-and-push:
     name: Build & Push Docker Image to ECR
@@ -17,11 +19,12 @@ jobs:
 
      
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-         aws-access-key-id: ${{ secrets.ACCESS_KEY }}
-         aws-secret-access-key: ${{ secrets.SECRET_KEY }}
-         aws-region: eu-north-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+    
 
       - name: Log in to Amazon ECR
         id: login-ecr
