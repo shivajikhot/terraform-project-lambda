@@ -1,46 +1,38 @@
-name: Build and Push Docker Image to ECR
+name: Build and Push to ECR
 
 on:
   workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main  # Change to your deployment branch
 
 jobs:
   build-and-push:
+    name: Build & Push Docker Image to ECR
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-west-1  
+     
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+         aws-access-key-id: ${{ secrets.ACCESS_KEY }}
+         aws-secret-access-key: ${{ secrets.SECRET_KEY }}
+         aws-region: eu-north-1
 
-    - name: install express
-      run: npm install express aws-serverless-express
-        
-    - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        region: us-west-1  
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build Docker image for patient service
-      run: |
-        ls
-        docker build -t patient-service:latest ./app/patient-service/
-        docker tag patient-service:latest 575108922676.dkr.ecr.us-west-1.amazonaws.com/patient-service-repo:latest
-
-    - name: Push Docker image to ECR
-      run: |
-        docker push 575108922676.dkr.ecr.us-west-1.amazonaws.com/patient-service-repo:latest
-
-    - name: Build Docker image for appointment service
-      run: |
-        docker build -t appointment-service:latest ./app/appointment-service/ 
-        docker tag appointment-service:latest 575108922676.dkr.ecr.us-west-1.amazonaws.com/appointment-service-repo:latest
-
-    - name: Push Docker image to ECR
-      run: |
-        docker push 575108922676.dkr.ecr.us-west-1.amazonaws.com/appointment-service-repo:latest
+      - name: Build Docker image appointment-service
+        run: |
+          docker build -t hello-world ./app
+          docker tag hello-world:latest 575108922676.dkr.ecr.us-west-1.amazonaws.com/hello-world:latest
+          
+          
+      - name: Push Docker image to ECR
+        run: |
+          docker push 575108922676.dkr.ecr.us-west-1.amazonaws.com//hello-world:latest
