@@ -11,6 +11,7 @@ module "lambda" {
 module "apigateway" {
   source                     = "../../modules/apigateway"
   hello_world_invoke_arn  = module.lambda.hello_world_invoke_arn
+  depends_on = [module.lambda]
 }
 module "ecr" {
   source = "../../modules/ecr"
