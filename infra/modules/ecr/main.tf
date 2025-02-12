@@ -1,14 +1,8 @@
 # ECR Repository for the microservices
-resource "aws_ecr_repository" "patient_service" {
-  name = "patient-service-repo"
+resource "aws_ecr_repository" "hello-world" {
+  name = "hello-world"
   tags = {
-    Name = "Patient Service Repository"
+    Name = "hello-world Repository"
   }
 }
 
-resource "aws_ecr_repository" "appointment_service" {
-  name = "appointment-service-repo"
-  tags = {
-    Name = "Appointment Service Repository"
-  }
-}
