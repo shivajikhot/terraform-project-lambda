@@ -30,6 +30,11 @@ resource "aws_apigatewayv2_authorizer" "cognito_auth" {
 resource "aws_apigatewayv2_api" "lambda" {
   name          = "serverless_lambda_gw"
   protocol_type = "HTTP"
+  cors_configuration {
+    allow_origins = ["*"]
+    allow_methods = ["GET", "POST", "OPTIONS"]
+    allow_headers = ["Authorization"]
+  }
 }
 
 resource "aws_apigatewayv2_stage" "lambda" {
