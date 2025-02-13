@@ -14,6 +14,17 @@ resource "aws_cognito_user_pool_client" "client" {
   callback_urls         = ["http://localhost:3000/callback"] # Update with actual frontend URL if applicable
 }
 
+resource "aws_cognito_user_pool" "pool" {
+  name = "serverless-auth-pool"
+
+  admin_create_user_config {
+    allow_admin_create_user_only = false
+  }
+
+  auto_verified_attributes = ["email"]  # Automatically verify email
+}
+
+
 resource "aws_apigatewayv2_authorizer" "cognito_auth" {
   api_id          = aws_apigatewayv2_api.lambda.id
   name            = "CognitoAuth"
