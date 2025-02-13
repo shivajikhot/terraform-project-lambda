@@ -1,3 +1,32 @@
+resource "aws_cognito_user_pool" "pool" {
+  name = "serverless-auth-pool"
+}
+
+resource "aws_cognito_user_pool_client" "client" {
+  name         = "serverless-app-client"
+  user_pool_id = aws_cognito_user_pool.pool.id
+
+  generate_secret       = false
+  explicit_auth_flows   = ["ALLOW_USER_PASSWORD_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH"]
+  allowed_oauth_flows   = ["implicit"]
+  allowed_oauth_scopes  = ["openid"]
+  allowed_oauth_flows_user_pool_client = true
+  callback_urls         = ["http://localhost:3000/callback"] # Update with actual frontend URL if applicable
+}
+
+resource "aws_apigatewayv2_authorizer" "cognito_auth" {
+  api_id          = aws_apigatewayv2_api.lambda.id
+  name            = "CognitoAuth"
+  authorizer_type = "JWT"
+  identity_source = "$request.header.Authorization"
+
+  jwt_configuration {
+    audience = [aws_cognito_user_pool_client.client.id]
+    issuer   = aws_cognito_user_pool.pool.endpoint
+  }
+}
+
+
 resource "aws_apigatewayv2_api" "lambda" {
   name          = "serverless_lambda_gw"
   protocol_type = "HTTP"
@@ -37,11 +66,14 @@ resource "aws_apigatewayv2_integration" "hello_world" {
 }
 
 resource "aws_apigatewayv2_route" "hello_world" {
-  api_id = aws_apigatewayv2_api.lambda.id
-
+  api_id    = aws_apigatewayv2_api.lambda.id
   route_key = "GET /hello"
   target    = "integrations/${aws_apigatewayv2_integration.hello_world.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
 }
+
 
 resource "aws_cloudwatch_log_group" "api_gw" {
   name = "/aws/api_gw/${aws_apigatewayv2_api.lambda.name}"
