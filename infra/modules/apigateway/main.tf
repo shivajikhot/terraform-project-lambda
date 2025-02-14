@@ -6,8 +6,8 @@ resource "aws_cognito_user_pool" "pool" {
 
 resource "aws_cognito_user" "yt_user" {
   user_pool_id = aws_cognito_user_pool.pool.id
-  username     = testuser
-  password     = Test@123
+  username     = "testuser"
+  password     = "Test@123"
 }
  
 resource "aws_cognito_user_pool_client" "client" {
