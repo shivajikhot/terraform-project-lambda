@@ -1,4 +1,4 @@
-# 1️⃣ Cognito User Pool (For Authentication)
+#  Cognito User Pool (For Authentication)
 resource "aws_cognito_user_pool" "pool" {
   name = "serverless-auth-pool"
   auto_verified_attributes = ["email"]  # Automatically verify email
@@ -11,7 +11,7 @@ resource "aws_cognito_user" "yt_user" {
   password     = "Test@123"
 }
 
-# 2️⃣ Cognito User Pool Client (For OAuth Authentication)
+# Cognito User Pool Client (For OAuth Authentication)
 resource "aws_cognito_user_pool_client" "client" {
   name         = "serverless-app-client"
   user_pool_id = aws_cognito_user_pool.pool.id
@@ -38,8 +38,6 @@ resource "aws_api_gateway_rest_api" "hello_api" {
     types = ["REGIONAL"]
   }
 }
-
-
 
 # Cognito Authorizer for API Gateway
 resource "aws_api_gateway_authorizer" "cognito" {
