@@ -4,7 +4,12 @@ resource "aws_cognito_user_pool" "pool" {
   auto_verified_attributes = ["email"]  # Automatically verify email
 }
 
-
+resource "aws_cognito_user" "yt_user" {
+  user_pool_id = aws_cognito_user_pool.pool.id
+  username     = testuser
+  password     = Test@123
+}
+ 
 resource "aws_cognito_user_pool_client" "client" {
   name         = "serverless-app-client"
   user_pool_id = aws_cognito_user_pool.pool.id
@@ -17,6 +22,10 @@ resource "aws_cognito_user_pool_client" "client" {
   callback_urls = ["${aws_apigatewayv2_api.lambda.api_endpoint}/serverless_lambda_stage/hello"] # Update with actual frontend URL if applicable
 }
 
+resource "aws_cognito_user_pool_domain" "pool_domain" {
+  domain       = "serverless-auth-demo"  # Change this to a unique domain
+  user_pool_id = aws_cognito_user_pool.pool.id
+}
 
 
 resource "aws_apigatewayv2_authorizer" "cognito_auth" {
