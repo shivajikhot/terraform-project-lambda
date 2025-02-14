@@ -34,6 +34,9 @@ resource "aws_cognito_user_pool_domain" "pool_domain" {
 resource "aws_api_gateway_rest_api" "hello_api" {
   name        = "hello-world-api"
   description = "API for Hello World Lambda"
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
 }
 
 
