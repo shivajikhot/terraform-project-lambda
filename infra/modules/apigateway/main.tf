@@ -21,7 +21,7 @@ resource "aws_cognito_user_pool_client" "client" {
   allowed_oauth_flows = ["implicit"]
   allowed_oauth_scopes = ["openid"]
   allowed_oauth_flows_user_pool_client = true
-  callback_urls = ["${aws_api_gateway_deployment.deployment.invoke_url}"]  # Update frontend URL
+  callback_urls = ["${aws_api_gateway_deployment.deployment.invoke_url}/hello"]  # Update frontend URL
 }
 
 # Cognito User Pool Domain (For Hosted UI)
