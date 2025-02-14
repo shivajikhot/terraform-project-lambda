@@ -36,6 +36,8 @@ resource "aws_api_gateway_rest_api" "hello_api" {
   description = "API for Hello World Lambda"
 }
 
+
+
 # Cognito Authorizer for API Gateway
 resource "aws_api_gateway_authorizer" "cognito" {
   name          = "CognitoAuthorizer"
@@ -55,7 +57,7 @@ resource "aws_api_gateway_resource" "hello_resource" {
 resource "aws_api_gateway_method" "hello_method" {
   rest_api_id   = aws_api_gateway_rest_api.hello_api.id
   resource_id   = aws_api_gateway_resource.hello_resource.id
-  http_method   = "GET"
+  http_method   = "ANY"
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = aws_api_gateway_authorizer.cognito.id
 }
@@ -70,6 +72,8 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   type                    = "AWS_PROXY"
   uri                     = var.hello_world_invoke_arn
 }
+
+
 
 # Enable CORS for Browser Access
 resource "aws_api_gateway_method_response" "cors" {
@@ -89,6 +93,10 @@ resource "aws_api_gateway_method_response" "cors" {
 resource "aws_api_gateway_deployment" "deployment" {
   rest_api_id = aws_api_gateway_rest_api.hello_api.id
   stage_name  = "dev"
+  depends_on = [
+    aws_api_gateway_method.hello_method,
+    aws_api_gateway_integration.lambda_integration
+  ]
 }
 
 # CloudWatch Log Group for API Gateway
