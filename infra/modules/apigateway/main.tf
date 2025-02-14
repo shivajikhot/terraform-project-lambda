@@ -11,7 +11,7 @@ resource "aws_cognito_user_pool_client" "client" {
   allowed_oauth_flows   = ["implicit"]
   allowed_oauth_scopes  = ["openid"]
   allowed_oauth_flows_user_pool_client = true
-  callback_urls         = ["http://localhost:3000/callback"] # Update with actual frontend URL if applicable
+  callback_urls = ["${aws_apigatewayv2_api.lambda_api.api_endpoint}/serverless_lambda_stage/hello] # Update with actual frontend URL if applicable
 }
 
 resource "aws_cognito_user_pool" "pool" {
