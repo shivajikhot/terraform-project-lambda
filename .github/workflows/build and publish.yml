@@ -30,7 +30,7 @@ jobs:
         with:
          role-to-assume: arn:aws:iam::575108922676:role/terraform-project-lambda_repo_role # Ensure this matches the role ARN
          role-session-name: github-actions-session
-         aws-region: ${env.AWS_REGION}
+         aws-region: ${{env.AWS_REGION}}
 
     
 
