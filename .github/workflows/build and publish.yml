@@ -7,7 +7,8 @@ on:
   #     - main  # Change to your deployment branch
 env:
   AWS_REGION: "us-west-1"
-  
+permissions:
+  id-token: write  
 jobs:
   build-and-push:
     name: Build & Push Docker Image to ECR
